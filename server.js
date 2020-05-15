@@ -1,80 +1,68 @@
 // Dependencies
-const http = require("http");
-const fs = require("fs");
+// =============================================================
+var express = require("express");
+var path = require("path");
+const shortid = require('shortid'); //new module for creating unique ids
 
-const PORT = 8080;
+// Sets up the Express App
+// =============================================================
+var app = express();
+var PORT = process.env.port || 8080;
 
-const server = http.createServer(handleRequest);
+// Sets up the Express app to handle data parsing
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-function handleRequest(req, res) {
-  const path = req.url;
-  
-  switch (path) {
-  case "/notes":
-    return renderNotesPage(req, res);
-  default:    
-    return renderWelcomePage(req, res);
+// test note data
+// =============================================================
+var notes = [
+  {
+    title: "test title",
+    text: "Test text",
+    id: "123456"
   }
-}
+];
 
-function renderWelcomePage(req, res) {
-fs.readFile(__dirname + "/public/index.html", function(err, data) {
-    if (err) {
-      res.writeHead(500, { "Content-Type": "text/html" });
-      res.end("<html><head><title>Oops</title></head><body><h1>Oops, there was an error</h1></html>");
-    }
-    else {
-      // We then respond to the client with the HTML page by specifically telling the browser that we are delivering
-      // an html file.
-      res.writeHead(200, { "Content-Type": "text/html" });
-      res.end(data);
-    }
-  });
-}
+// Routes
+// =============================================================
+// Basic route that sends the user first to the AJAX Page
+app.get("/", function(req, res) {
+  res.sendFile(path.join(__dirname, "/public/index.html"));
+});
+app.get("/notes", function(req, res) {
+  res.sendFile(path.join(__dirname, "/public/notes.html"));
+});
+app.use(express.static(__dirname + '/public'));
 
 
+app.get("/api/notes", function(req, res) {
+   return res.json(notes);
+});
 
-function renderNotesPage(req, res) {
-  fs.readFile(__dirname + "/public/notes.html", function(err, data) {
-      if (err) {
-        res.writeHead(500, { "Content-Type": "text/html" });
-        res.end("<html><head><title>Oops</title></head><body><h1>Oops, there was an error</h1></html>");
-      }
-      else {
-        // We then respond to the client with the HTML page by specifically telling the browser that we are delivering
-        // an html file.
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.end(data);
-      }
-    });
-  }
+app.post("/api/notes", function(req, res) {
+   var newNote = req.body;
+   
+   let newID = shortid.generate(); 
+ 
+   newNote.id = newID;   
 
-function renderThankYouPage(req, res) {
-  // Saving the request posted data as a variable.
-  const requestData = "";
-  const myHTML =
-    "<html><head><title>Hello Noder!</title></head><body><h1>Oops, I didn't get any data</h1></body></html>";
-  
-// When the server receives data, it will add it to requestData.
-  req.on("data", function(data) {
-    requestData += data;
-    console.log("You just posted some data to the server:\n", requestData);
-    myHTML =
-      "<html><head><title>Hello Noder!</title></head><body>" +
-      "<h1>Thank you for the data: </h1><code>" +
-      requestData +
-      "</code>" +
-      "</body></html>";
-  });
+   notes.push(newNote);
+   res.json(notes);
+});
 
-  // When the request has ended...
-  req.on("end", function() {
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end(myHTML);
-  });
-}
+app.delete("/api/notes/:id", function(req, res) {
+   var noteID = req.params.id;
 
-// Starts our server.
-server.listen(PORT, function() {
-  console.log("Server listening on: http://localhost:" + PORT);
+   for (i = 0; i < notes.length; i++) {
+     if (noteID === notes[i].id) {
+        notes.splice(i,1);
+        res.json(notes);
+     }
+   }
+});
+
+// Starts the server to begin listening
+// =============================================================
+app.listen(PORT, function() {
+  console.log("App listening on PORT " + PORT);
 });
