@@ -59,6 +59,5 @@ class FileOps {
 
 
 module.exports = new FileOps();
-S
 
 
