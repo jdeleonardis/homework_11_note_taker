@@ -14,8 +14,8 @@ class FileOps {
     }
     getNotes(){
         
-        return this.read()     //LOTS OF RETURNS
-        .then (notes => {       //WHAT IS NOTES?  - returned value from this.read, but????
+        return this.read()
+        .then (notes => {  
              let parsedNotes = JSON.parse(notes); //passing notes and converting it to a json object
              return parsedNotes;
         });
@@ -48,7 +48,7 @@ class FileOps {
                 });
             })        
 
-        // .then(filterNotes => this.write(filterNotes));
+
         .then(filterNotes => {
             return this.write(filterNotes)
         });        
@@ -58,6 +58,7 @@ class FileOps {
 
 
 
-module.exports = new FileOps();  //THIS WAS AN ACCIDENT.  GENERATING A NEW INSTANCE OF FILEOPS, BUT???  Only one instance?
+module.exports = new FileOps();
+S
 
 
