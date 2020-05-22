@@ -1,4 +1,3 @@
-//const path = require('path');
 const FileOps = require('../js/fileops');
 
 module.exports = function(app) {
