@@ -6,42 +6,38 @@ const readData = util.promisify(fs.readFile);
 const writeData = util.promisify(fs.writeFile);
 
 class FileOps {
-    read() {
-        return readData("db/db.json", "utf8");
-    }
-    write(note){
-        return writeData("db/db.json", JSON.stringify(note));
-    }
-    getNotes(){
+
+    getExistingNotes(){
         
-        return this.read()
-        .then (notes => {  
+        return readData("db/db.json", "utf8").then (function(notes) {  
              let parsedNotes = JSON.parse(notes); //passing notes and converting it to a json object
              return parsedNotes;
         });
     }
    
-    addNote(note){
-        const {title, text} = note; //object destructuring of the note passed in
-        const newID = shortid.generate(); //get a unique id
-        const newNote = {title, text, id: newID}; //build a new note object
-        return this.getNotes()
+    addNewNote(note){        
+        const newID = shortid.generate(); //get a unique id with the shortid module
+        const newNote = {title: note.title, text: note.text, id: newID}; //build a new note object with the note passed in,
+                                                                         //plus a unique id        
+        return this.getExistingNotes()
         //.then (notes => console.log(notes));
-        .then (notes => {
+        .then (function(notes) {
             notes.push(newNote);
             return notes;
         })        
-        .then (writeNote => {
-            return this.write(writeNote)
+        .then (function(writeNote) {
+            return writeData("db/db.json", JSON.stringify(writeNote));
+        })        
+        .then (function(data){
+            return newNote
         })
-        .then (() => newNote)
     }
 
     removeNote(id){
 
-        return this.getNotes()
+        return this.getExistingNotes()
 
-        .then ((allNotes) => {
+        .then (function(allNotes){
             //console.log(allNotes)
             return allNotes.filter(function (note) {      
                 return note.id !== id
@@ -49,8 +45,8 @@ class FileOps {
             })        
 
 
-        .then(filterNotes => {
-            return this.write(filterNotes)
+        .then(function(filterNotes) {
+            return writeData("db/db.json", JSON.stringify(filterNotes));
         });        
     }
     

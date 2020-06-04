@@ -4,22 +4,28 @@ module.exports = function(app) {
     //gets all notes
     app.get("/api/notes", function(req, res) {
         // return res.json(notes);  
-        FileOps.getNotes()
-            .then((note) => res.json(note))  //JSON.parse reads file and conerts JSON to array of objects. then "res.send" sends info to broswer
+        FileOps.getExistingNotes() //file gets read here, and the data in the file comes back in res.json(note)
+            .then(function(note) {
+                res.json(note)
+            })  
             .catch((err) => res.status(500).json(err));      
     });
 
     //adds a new note
     app.post("/api/notes", function(req, res) {
-        FileOps.addNote(req.body)
-            .then((note) => res.json(note))
+        FileOps.addNewNote(req.body)
+            .then(function(note) {  //similar to the 'read' above, but the update is happening in fileops too.
+                res.json(note)
+            })
             .catch((err) => res.status(500).json(err));
     });
 
     //deletes a note by id
     app.delete("/api/notes/:id", function(req, res) {
         FileOps.removeNote(req.params.id)
-            .then(() => res.sendStatus(200))          //the broswer has removed note or ok: true
+            .then(function() {
+                res.sendStatus(200)  //note has been deleted
+            })  
             .catch((err) => 
             console.log(err));
     });
